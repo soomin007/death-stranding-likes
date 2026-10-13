@@ -10,7 +10,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   const W = 2300, H = 1000;
   const SPEED = 125;                       // 걸음 기준 속도 (세계 단위 / 초)
-  const KIND = { walk: 1, slope: 0.56, wade: 0.32, stones: 0.45, ladder: 0.45, rubble: 0.42, road: 1.1, haul: 0.55, drive: 2.6 };
+  const KIND = { walk: 1, slope: 0.56, wade: 0.32, shallow: 0.45, ladder: 0.45, rubble: 0.42, road: 1.1, haul: 0.55, drive: 2.6 };
   const NEED = 600;                        // 국도 복구에 드는 금속 · 세라믹 (각각, 예시 수치)
   const STOCK = { metal: 680, ceramic: 640 };
   const TRIPS = 3;                         // 창고와 복구 장치 사이를 오가는 횟수
@@ -35,9 +35,9 @@
 
   const ROUTE = {
     ford: { names: ['FORK', 'F1', 'FW', 'FE', 'F2', 'C'], kinds: ['walk', 'walk', 'wade', 'walk', 'walk'] },
-    up: { names: ['FORK', 'U1', 'U2', 'UW', 'UE', 'U3', 'U4', 'C'], kinds: ['slope', 'slope', 'slope', 'stones', 'slope', 'slope', 'slope'] },
+    up: { names: ['FORK', 'U1', 'U2', 'UW', 'UE', 'U3', 'U4', 'C'], kinds: ['slope', 'slope', 'slope', 'shallow', 'slope', 'slope', 'slope'] },
   };
-  const STONES = [[818, 383], [841, 382], [864, 381]];
+  const SHALLOW = [[818, 383], [841, 382], [864, 381]];   // 상류의 얕은 물 (스캔 표시 자리)
   const TAIL = { names: ['C', 'LW', 'LE', 'R0', 'RB0', 'RB1', 'TOWN'], kinds: ['walk', 'ladder', 'walk', 'road', 'rubble', 'road'] };
 
   const LIKE_PATH = 'M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z';
@@ -188,10 +188,12 @@
       const x = y < 330 ? 828 : 800 + (y - 330) * 0.02 + 14;
       node('path', { d: `M${x} ${y} q12 -5 24 0 t24 0` }, ripple);
     }
-    const foam = node('g', { opacity: .9 }, svg);           // 여울의 흰 물살
+    const foam = node('g', { opacity: .9 }, svg);           // 가까운 곳(깊은 물)의 흰 물살
     for (let i = 0; i < 7; i++) node('path', { d: `M${782 + i * 17} ${606 + (i % 2) * 14} q6 -4 12 0`, stroke: '#eef6f3', 'stroke-width': 2, fill: 'none' }, foam);
-    const stones = node('g', { fill: '#7d8b86' }, svg);       // 징검돌
-    STONES.forEach(([x, y]) => node('ellipse', { cx: x, cy: y, rx: 9, ry: 5 }, stones));
+    // 상류의 얕은 물: 물빛이 옅고 바닥 자갈이 비친다
+    node('ellipse', { cx: 841, cy: 382, rx: 52, ry: 15, fill: '#b9d5d0', opacity: .45 }, svg);
+    const pebbles = node('g', { fill: '#8c9a94', opacity: .7 }, svg);
+    [[812, 378], [826, 388], [846, 376], [860, 389], [872, 380]].forEach(([x, y]) => node('ellipse', { cx: x, cy: y, rx: 3.5, ry: 2 }, pebbles));
 
     const far = node('g', { fill: '#4a5f62', opacity: '.75' }, svg);
     node('path', { d: 'M-400 120 L-200 70 L40 100 L260 40 L420 90 L640 30 L900 100 L1120 50 L1380 105 L1600 45 L1860 100 L2100 35 L2360 95 L2700 60 L2700 140 L-400 140Z' }, far);
@@ -251,7 +253,7 @@
     el.newLen = newLen;
     el.newRoad = node('polyline', { points: poly(['RB1', 'RB0']), stroke: '#7f918a', 'stroke-width': 30, ...roadStyle, 'stroke-dasharray': `${newLen} ${newLen}`, 'stroke-dashoffset': newLen }, svg);
     el.newRoadLine = node('polyline', { points: poly(['RB1', 'RB0']), stroke: '#d6e6dc', 'stroke-width': 1.5, ...roadStyle, 'stroke-dasharray': `${newLen} ${newLen}`, 'stroke-dashoffset': newLen }, svg);
-    // 도로 가운데의 에너지 라인 (복구 뒤에 켜진다)
+    // 도로 가운데 선: 이 위를 달리면 배터리가 닳지 않는다 (복구 뒤에 켜진다)
     el.energy = node('polyline', { points: poly(['R0', 'RB0', 'RB1', 'TOWN']), stroke: HOLO, 'stroke-width': 2.2, fill: 'none', opacity: 0 }, svg);
 
     // 다음 날의 흔적: 발자국 · 바퀴 자국 (이은 구간 위)
@@ -278,23 +280,23 @@
       node('line', { x1: x, y1: y - 7, x2: x, y2: y + 7, 'stroke-width': 2 }, el.ladder);
     }
 
-    // 스캔 표시: 노란 네모 = 깊다, 파란 동그라미 = 얕다 (색과 모양으로 함께 구분)
+    // 스캔 표시: 노란 네모 = 깊은 물, 파란 동그라미 = 얕은 물 (색과 모양으로 함께 구분)
     el.scan = node('g', { opacity: 0 }, svg);
     [0.15, 0.4, 0.65, 0.88].forEach((k) => {
       const x = P.FW[0] + (P.FE[0] - P.FW[0]) * k, y = P.FW[1] + (P.FE[1] - P.FW[1]) * k;
       node('rect', { x: x - 7, y: y - 7, width: 14, height: 14, fill: 'none', stroke: '#f0c36a', 'stroke-width': 2.4 }, el.scan);
     });
-    STONES.forEach(([x, y]) => node('circle', { cx: x, cy: y, r: 9, fill: 'none', stroke: '#7fc8ff', 'stroke-width': 2.4 }, el.scan));
+    SHALLOW.forEach(([x, y]) => node('circle', { cx: x, cy: y, r: 9, fill: 'none', stroke: '#7fc8ff', 'stroke-width': 2.4 }, el.scan));
     const scanLabel = (x, y, text, color) => {
       const t = node('text', { x, y, fill: color, 'font-size': 15, 'text-anchor': 'middle', 'paint-order': 'stroke', stroke: '#162224', 'stroke-width': 4 }, el.scan);
       t.textContent = text;
     };
-    scanLabel(838, 660, '깊음', '#f0c36a');
-    scanLabel(841, 412, '얕음', '#7fc8ff');
+    scanLabel(838, 660, '깊은 물', '#f0c36a');
+    scanLabel(841, 414, '얕은 물', '#7fc8ff');
     el.scanRing = node('circle', { cx: 0, cy: 0, r: 0, fill: 'none', stroke: HOLO, 'stroke-width': 2, opacity: 0 }, svg);
     el.netPulse = node('circle', { cx: 0, cy: 0, r: 0, fill: 'none', stroke: HOLO, 'stroke-width': 3, opacity: 0 }, svg);
 
-    // 거점 · 마을 · 오두막
+    // 배송 센터 · 마을 · 오두막
     const base = node('g', { transform: `translate(${P.BASE[0]} ${P.BASE[1]})` }, svg);
     node('path', { d: 'M-46 0 Q-46 -48 0 -54 Q46 -48 46 0Z', fill: '#617370', stroke: '#b9c9c1', 'stroke-width': 1.5 }, base);
     node('rect', { x: -10, y: -20, width: 20, height: 20, fill: '#22302e' }, base);
@@ -319,19 +321,17 @@
       t.textContent = text;
       return t;
     };
-    label(P.BASE[0], P.BASE[1] + 30, '거점');
+    label(P.BASE[0], P.BASE[1] + 30, '배송 센터');
     label(P.TOWN[0], P.TOWN[1] + 46, '마을');
     label(P.CABIN[0], P.CABIN[1] + 28, '강가 오두막');
-    label(P.FW[0] - 30, P.FW[1] + 44, '여울');
-    label(P.UW[0] + 34, P.UW[1] - 26, '징검돌');
     label(P.RB1[0] + 11, P.RB1[1] - 82, '도로 복구 장치', 14);
     el.brokenLabel = label(P.RB0[0] + 210, P.RB0[1] + 50, '무너진 국도');
 
-    // 세워 둔 트라이크 (다음 날, 도로 끝)
+    // 세워 둔 오토바이 (다음 날, 도로 끝)
     el.parked = node('g', { transform: `translate(${P.R0[0] + 14} ${P.R0[1] + 30})`, opacity: 0 }, svg);
     drawTrike(el.parked, false);
 
-    // 홀로그램 층: 사다리 표지 · 내가 이은 국도 표지
+    // 홀로그램 층: 사다리 표지판 · 내가 이은 국도 표지판
     el.holoLayer = node('g', {}, svg);
     el.ladderHolo = makeHolo(P.LE[0] - 4, P.LE[1] - 40, 30);
     el.roadHolo = makeHolo(P.RB1[0] + 11, P.RB1[1] - 100, 30);
@@ -351,7 +351,7 @@
     el.trike = node('g', { opacity: 0 }, el.porter);
     drawTrike(el.trike, true);
 
-    // 균형 게이지 (여울에서 화물을 지고 있을 때만)
+    // 균형 게이지 (깊은 물에서 화물을 지고 있을 때만)
     el.bal = node('g', { opacity: 0 }, svg);
     node('rect', { x: -16, y: 0, width: 32, height: 5, rx: 2.5, fill: '#0c1517', stroke: '#ffffff55', 'stroke-width': 1 }, el.bal);
     el.balFill = node('rect', { x: -16, y: 0, width: 0, height: 5, rx: 2.5, fill: '#9fe0b8' }, el.bal);
@@ -576,7 +576,7 @@
       g.push({ at: leg.at('FE', 4), fn: () => setCaption(`건넜다. 화물 상태 ${S.cargo}%.`, 3500) });
     } else {
       g.push({ at: 20, fn: () => setCaption('상류 쪽으로 오른다. 오르막이라 걸음이 느리다.', 5000) });
-      g.push({ at: leg.at('UW', -4), fn: () => setCaption('물이 얕다. 징검돌을 밟고 건넌다.', 4000) });
+      g.push({ at: leg.at('UW', -4), fn: () => setCaption('물이 얕다. 화물이 젖을 걱정 없이 걸어서 건넌다.', 4000) });
     }
     g.push({ at: leg.at('C', 0), fn: () => fadeOut(el.scan) });
     g.push({ at: leg.at('LW', -14), block: true, fn: gateCrevasse });
@@ -655,10 +655,10 @@
     showPanel({
       tag: TAG.sim,
       title: '스캔 결과',
-      html: '<p>가까운 여울에는 노란 네모가 떴다. 물이 깊다는 뜻이다. 상류 징검돌 쪽은 파란 동그라미로, 물이 얕다. 대신 오르막을 한참 돌아가야 한다.</p>',
+      html: '<p>가까운 곳에는 노란 네모가 떴다. 물이 깊다는 뜻이다. 상류 쪽에는 파란 동그라미가 떴다. 물은 얕지만, 오르막을 한참 돌아가야 한다.</p>',
       buttons: [
-        { label: '여울로 건너기', sub: '빠르다. 균형을 잃으면 넘어지고 화물이 상한다.', fn: () => chooseRoute('ford') },
-        { label: '상류로 돌아가기', sub: '느리다. 화물은 안전하다.', fn: () => chooseRoute('up') },
+        { label: '가까운 곳으로 건너기', sub: '빠르다. 물이 깊어서 균형을 잃으면 넘어지고 화물이 상한다.', fn: () => chooseRoute('ford') },
+        { label: '상류로 돌아가기', sub: '느리다. 물이 얕아서 화물은 안전하다.', fn: () => chooseRoute('up') },
       ],
     });
   }
@@ -691,8 +691,8 @@
   function gateLadderLike() {
     showPanel({
       tag: TAG.sim,
-      title: '사다리 표지',
-      html: '<p>사다리 끝에 놓은 사람의 표지가 떠 있다. 좋아요를 보낼 수 있고, 누르는 만큼 간다.</p>' +
+      title: '사다리 표지판',
+      html: '<p>사다리 끝에 놓은 사람의 표지판이 떠 있다. 좋아요를 보낼 수 있고, 누르는 만큼 간다.</p>' +
         '<p class="note">보내지 않고 지나가도 된다.</p><p class="sent" id="sent" aria-live="polite"></p><div id="mem-slot"></div>',
       buttons: [
         { label: LIKE_ICON + '좋아요', cls: 'like-btn', id: 'like-btn', fn: sendLike },
@@ -768,7 +768,7 @@
       tag: TAG.sim,
       title: '국도 복구',
       html: `<p>무너진 구간을 다시 이으려면 금속 ${NEED}, 세라믹 ${NEED}이 든다. 마을 창고에 둔 내 자재는 금속 ${STOCK.metal}, 세라믹 ${STOCK.ceramic}. 그동안 배송하면서 모은 것이다. 거의 다 들어간다.</p>` +
-        '<p>길이 이어지면 이 구간을 차로 달릴 수 있다. 도로 가운데 에너지 라인 위에서는 배터리도 닳지 않는다. 다른 배달부들도 이 길을 쓰게 된다.</p>' +
+        '<p>길이 이어지면 이 구간을 차로 달릴 수 있다. 도로 가운데 선을 따라 달리면 배터리도 닳지 않는다. 다른 배달부들도 이 길을 쓰게 된다.</p>' +
         `<p class="note">한 번에 질 수 있는 양이 정해져 있어서 창고와 장치를 ${TRIPS}번 오가야 한다. 이 체험에서는 여기서 길을 잇고 넘어간다.</p>`,
       buttons: [{ label: '자재 가지러 가기', cls: 'go', fn: () => { unblock(); S.load = 'none'; setObjective(`자재 나르기 1/${TRIPS} · 창고로`, buildSub()); startLeg(legHaul()); } }],
     });
@@ -822,8 +822,8 @@
       el.tint.setAttribute('opacity', 0.08);
       el.traces.setAttribute('opacity', 0.9);
       el.roadHolo.show = true;
-      setObjective('거점으로 돌아가기', '트라이크');
-      setCaption('다음 날 아침. 마을 차고에서 트라이크를 빌렸다. 어제 이은 길로 거점에 돌아간다.', 6000);
+      setObjective('배송 센터로 돌아가기', '오토바이');
+      setCaption('다음 날 아침. 마을 차고에서 오토바이를 빌렸다. 어제 이은 길로 배송 센터에 돌아간다.', 6000);
       startLeg(legRide());
       S.cam = null;
       S.blocked = false;
@@ -864,15 +864,15 @@
     S.stun = 0.6;
     el.parked.setAttribute('opacity', 1);
     el.roadHolo.show = false;
-    setObjective('거점으로 돌아가기', '걸어서');
-    setCaption('도로가 끝나는 곳이다. 트라이크를 세워 두고 걸어간다.', 4500);
+    setObjective('배송 센터로 돌아가기', '걸어서');
+    setCaption('도로가 끝나는 곳이다. 오토바이를 세워 두고 걸어간다.', 4500);
   }
 
   function gateHome() {
-    setObjective('거점 도착');
+    setObjective('배송 센터 도착');
     showPanel({
       tag: TAG.sim,
-      title: '거점에 돌아왔다',
+      title: '배송 센터에 돌아왔다',
       html: `<p>첫 배송이 끝났다. 이번에 받은 좋아요는 모두 ${S.likes}개다.</p>` +
         '<p>작은 배송이 하나 더 있다. 강가 오두막에 상자 하나를 전하는 짧은 길이다.</p>' +
         '<p class="note">여기서 마쳐도 아래 글과 질문은 그대로 이어진다.</p>',
@@ -1148,7 +1148,7 @@
       el.balFill.setAttribute('fill', S.balance < 0.6 ? '#9fe0b8' : '#f0c36a');
     }
 
-    // 에너지 라인은 트라이크가 그 위를 달릴 때 밝아진다
+    // 도로 가운데 선은 오토바이가 그 위를 달릴 때 밝아진다
     if (S.built >= 1) el.energy.setAttribute('opacity', riding && walking ? 0.85 : 0.3);
 
     // 홀로그램
@@ -1248,7 +1248,7 @@
     showPanel({
       tag: TAG.sim,
       title: '배송 의뢰',
-      html: '<p>거점에 있는 화물 하나를 강 건너 마을까지 옮긴다.</p>' +
+      html: '<p>배송 센터에 있는 화물 하나를 강 건너 마을까지 옮긴다.</p>' +
         '<p class="note">아래 "앞으로 가기"를 누르고 있으면 움직인다. 키보드는 → 키를 누르고 있으면 된다. 골라야 하는 곳에서는 저절로 멈춘다.</p>',
       focus: false,
     });
