@@ -80,9 +80,10 @@ h1, h2, h3 { font-weight: 500; }
 }
 .hero { padding-top: 9vh; padding-bottom: 8vh; }
 .hero h1 {
-  font-size: clamp(46px, 9vw, 96px); line-height: 1.15; letter-spacing: -.02em;
+  font-size: clamp(40px, 10.5vw, 96px); line-height: 1.15; letter-spacing: -.02em;
   margin: 0 0 24px; font-weight: 400;
 }
+.nw { white-space: nowrap; }
 .lede { font-size: 18px; color: var(--dim); margin: 0 0 40px; }
 .world-intro { border-left: 2px solid var(--line); padding-left: 18px; margin-bottom: 28px; }
 .world-intro p { margin: 0 0 8px; font-size: 16.5px; }
