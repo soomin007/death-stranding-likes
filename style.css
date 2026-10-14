@@ -236,8 +236,9 @@ h1, h2, h3 { font-weight: 500; }
 .memory .fact { font-weight: 500; }
 .aside { font-size: 14.5px !important; color: #4f625b; }
 .abstract { margin-inline: 0; margin-block: 26px 10px; border-left: 3px solid #8d78c2; padding-left: 18px; }
-.abstract blockquote { margin: 0; font-family: Georgia, "Times New Roman", serif; font-style: italic; }
-.abstract blockquote p { font-size: 17px; margin-bottom: 8px; }
+.abstract blockquote { margin: 0; }
+.abstract blockquote p { font-size: 18px; margin-bottom: 8px; }
+.abstract .orig { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 14.5px; color: #4f625b; }
 .abstract figcaption { font-size: 13.5px; color: #4f625b; }
 .gloss { background: #d7ded2; padding-block: 12px; padding-inline: 16px; border-radius: 3px; font-size: 15.5px !important; }
 .gloss-label { display: block; font-size: 12.5px; color: #5a3f9a; margin-bottom: 4px; }
