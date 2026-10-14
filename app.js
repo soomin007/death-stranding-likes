@@ -572,19 +572,19 @@
     const leg = makeLeg(R.names.concat(TAIL.names.slice(1)), R.kinds.concat(TAIL.kinds));
     const g = [];
     if (route === 'ford') {
-      g.push({ at: leg.at('FW', -4), fn: () => setCaption('물이 깊다. 계속 밀고 가면 균형이 무너진다. 잠깐씩 손을 떼면 균형을 되찾는다.', 7000) });
-      g.push({ at: leg.at('FE', 4), fn: () => setCaption(`건넜다. 화물 상태 ${S.cargo}%.`, 3500) });
+      g.push({ at: leg.at('FW', -4), fn: () => setCaption('물이 깊어요. 계속 누르고 있으면 균형을 잃습니다. 잠깐씩 손을 떼면 다시 중심을 잡아요.', 7000) });
+      g.push({ at: leg.at('FE', 4), fn: () => setCaption(`강을 건넜습니다 · 화물 상태 ${S.cargo}%`, 3500) });
     } else {
-      g.push({ at: 20, fn: () => setCaption('상류 쪽으로 오른다. 오르막이라 걸음이 느리다.', 5000) });
-      g.push({ at: leg.at('UW', -4), fn: () => setCaption('물이 얕다. 화물이 젖을 걱정 없이 걸어서 건넌다.', 4000) });
+      g.push({ at: 20, fn: () => setCaption('상류로 올라가는 중. 오르막이라 걸음이 느려요.', 5000) });
+      g.push({ at: leg.at('UW', -4), fn: () => setCaption('물이 얕아서 화물이 젖을 걱정은 없어요.', 4000) });
     }
     g.push({ at: leg.at('C', 0), fn: () => fadeOut(el.scan) });
     g.push({ at: leg.at('LW', -14), block: true, fn: gateCrevasse });
-    g.push({ at: leg.at('LW', 2), fn: () => setCaption('사다리 위에서는 천천히 간다.', 3000) });
+    g.push({ at: leg.at('LW', 2), fn: () => setCaption('사다리 위에서는 천천히 움직입니다.', 3000) });
     g.push({ at: leg.at('LE', 58), block: true, fn: gateLadderLike });
     g.push({ at: leg.at('LE', 150), fn: () => { el.ladderHolo.show = false; } });
-    g.push({ at: leg.at('RB0', -4), fn: () => setCaption('국도가 무너진 구간이다. 잔해를 밟고 가느라 느리다.', 5500) });
-    g.push({ at: leg.at('RB1', -90), fn: () => setCaption('길가에 도로 복구 장치가 있다. 꺼져 있다. 이 일대가 아직 카이랄 네트워크에 연결되지 않아서다.', 7000) });
+    g.push({ at: leg.at('RB0', -4), fn: () => setCaption('무너진 국도 구간. 잔해를 밟고 가느라 느려요.', 5500) });
+    g.push({ at: leg.at('RB1', -90), fn: () => setCaption('길가의 도로 복구 장치가 꺼져 있어요. 이 일대가 아직 카이랄 네트워크에 연결되지 않았기 때문입니다.', 7000) });
     g.push({ at: leg.len, block: true, fn: gateDeliver });
     addGates(leg, g);
     return leg;
@@ -620,11 +620,11 @@
     const g = [
       { at: leg.idx(1, 30), block: true, fn: gateRoadReaction },
       { at: leg.idx(3), fn: dismount },
-      { at: leg.idx(4, -60), fn: () => { el.ladderHolo.show = true; setCaption(S.sentLikes ? '어제 좋아요를 보낸 사다리다. 그대로 걸려 있다.' : '사다리는 그대로 걸려 있다.', 4500); } },
+      { at: leg.idx(4, -60), fn: () => { el.ladderHolo.show = true; setCaption(S.sentLikes ? '어제 좋아요를 보낸 그 사다리예요.' : '사다리가 아직 그 자리에 있어요.', 4500); } },
       { at: leg.idx(5, 40), fn: () => { el.ladderHolo.show = false; } },
       { at: leg.len, block: true, fn: gateHome },
     ];
-    if (S.route === 'ford') g.push({ at: leg.at('FE', -4), fn: () => setCaption('짐이 없어서 균형을 잃을 걱정이 없다.', 4000) });
+    if (S.route === 'ford') g.push({ at: leg.at('FE', -4), fn: () => setCaption('짐이 없으니 넘어질 걱정은 없어요.', 4000) });
     addGates(leg, g);
     return leg;
   }
@@ -632,7 +632,7 @@
   function legExtra() {
     const leg = makeLeg(['BASE', 'A', 'K1', 'CABIN'], ['walk', 'walk', 'walk']);
     addGates(leg, [
-      { at: 20, fn: () => setCaption('가까운 길이다.', 3000) },
+      { at: 20, fn: () => setCaption('가까운 길이에요.', 3000) },
       { at: leg.len, block: true, fn: gateCabin },
     ]);
     return leg;
@@ -643,7 +643,7 @@
     showPanel({
       tag: TAG.sim,
       title: '갈림길',
-      html: '<p>강을 건너야 한다. 어디로 건널지 정하기 전에 지형을 스캔할 수 있다.</p>',
+      html: '<p>마을에 가려면 강을 건너야 해요. 어디로 건널지 정하기 전에 지형을 스캔해 볼 수 있습니다.</p>',
       buttons: [{ label: '지형 스캔', cls: 'go', fn: doScan }],
     });
   }
@@ -655,10 +655,10 @@
     showPanel({
       tag: TAG.sim,
       title: '스캔 결과',
-      html: '<p>가까운 곳에는 노란 네모가 떴다. 물이 깊다는 뜻이다. 상류 쪽에는 파란 동그라미가 떴다. 물은 얕지만, 오르막을 한참 돌아가야 한다.</p>',
+      html: '<p>가까운 곳의 노란 네모는 물이 깊다는 표시예요. 상류의 파란 동그라미는 물이 얕은 곳이지만, 오르막을 한참 돌아가야 합니다.</p>',
       buttons: [
-        { label: '가까운 곳으로 건너기', sub: '빠르다. 물이 깊어서 균형을 잃으면 넘어지고 화물이 상한다.', fn: () => chooseRoute('ford') },
-        { label: '상류로 돌아가기', sub: '느리다. 물이 얕아서 화물은 안전하다.', fn: () => chooseRoute('up') },
+        { label: '가까운 곳으로 건너기', sub: '빠름 · 물이 깊어서 넘어지면 화물이 상함', fn: () => chooseRoute('ford') },
+        { label: '상류로 돌아가기', sub: '느림 · 물이 얕아서 화물은 안전함', fn: () => chooseRoute('up') },
       ],
     });
   }
@@ -672,7 +672,7 @@
     showPanel({
       tag: TAG.sim,
       title: '깊은 틈',
-      html: '<p>땅이 갈라져 길이 끊겼다. 화물을 지고는 건널 수 없다.</p>',
+      html: '<p>땅이 갈라져 길이 끊겼어요. 화물을 진 채로는 건널 수 없습니다.</p>',
       buttons: [{ label: '주변 살피기', cls: 'go', fn: revealLadder }],
     });
   }
@@ -683,7 +683,7 @@
     showPanel({
       tag: TAG.sim,
       title: '누군가 놓아 둔 사다리',
-      html: '<p>틈 위에 사다리 하나가 걸쳐 있다. 다른 배달부가 놓고 간 것이다. 이게 없었으면 틈을 따라 한참 돌아가야 했다.</p>',
+      html: '<p>틈 위에 사다리 하나가 걸쳐 있어요. 다른 배달부가 놓고 간 거예요. 이게 없었다면 틈을 따라 한참 돌아가야 했을 겁니다.</p>',
       buttons: [{ label: '사다리로 건너기', cls: 'go', fn: unblock }],
     });
   }
@@ -692,8 +692,8 @@
     showPanel({
       tag: TAG.sim,
       title: '사다리 표지판',
-      html: '<p>사다리 끝에 놓은 사람의 표지판이 떠 있다. 좋아요를 보낼 수 있고, 누르는 만큼 간다.</p>' +
-        '<p class="note">보내지 않고 지나가도 된다.</p><p class="sent" id="sent" aria-live="polite"></p><div id="mem-slot"></div>',
+      html: '<p>사다리 끝에 놓은 사람의 표지판이 떠 있어요. 누르는 만큼 좋아요가 전해집니다.</p>' +
+        '<p class="note">보내지 않고 지나가도 괜찮아요.</p><p class="sent" id="sent" aria-live="polite"></p><div id="mem-slot"></div>',
       buttons: [
         { label: LIKE_ICON + '좋아요', cls: 'like-btn', id: 'like-btn', fn: sendLike },
         { label: '그냥 지나가기', id: 'pass-btn', fn: passLadder },
@@ -708,7 +708,7 @@
     spawnRise(h.x, h.y - h.s * 0.55, h.s);
     sfxLike();
     const sent = document.getElementById('sent');
-    if (sent) sent.textContent = `보낸 좋아요 ${S.sentLikes}` + (S.sentLikes >= LIKE_CAP ? ' · 한 번에 보낼 수 있는 만큼 다 보냈다.' : '');
+    if (sent) sent.textContent = `보낸 좋아요 ${S.sentLikes}` + (S.sentLikes >= LIKE_CAP ? ' · 한 번에 보낼 수 있는 만큼 다 보냈어요.' : '');
     if (S.sentLikes >= LIKE_CAP) { const b = document.getElementById('like-btn'); if (b) b.disabled = true; }
     if (S.sentLikes === 1) {
       const slot = document.getElementById('mem-slot');
@@ -722,7 +722,7 @@
     if (S.sentLikes > 0) { unblock(); return; }
     showPanel({
       tag: TAG.sim,
-      title: '사다리를 지나간다',
+      title: '사다리를 지나며',
       html: memCard(MEM.ladder),
       buttons: [{ label: '계속 가기', cls: 'go', fn: unblock }],
     });
@@ -740,7 +740,7 @@
       html: '<p class="who">마을의 수령인 (게임 속 인물)</p>' +
         `<p class="say">${good ? '"먼 길 오셨네요. 잘 받았습니다."' : '"상자가 좀 젖었네요. 그래도 와 주셔서 다행이에요."'}</p>` +
         resultLine() +
-        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${TOWN_LIKES}개를 보냈다. 게임이 정해 둔 반응이다.</span></p>` +
+        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${TOWN_LIKES}개를 보냈어요. 게임이 정해 둔 반응입니다.</span></p>` +
         memCard(MEM.npc),
       buttons: [{ label: '다음', cls: 'go', fn: showNetwork }],
     });
@@ -755,21 +755,21 @@
     sfxScan();
     showPanel({
       tag: TAG.sim,
-      title: '마을이 네트워크에 연결됐다',
-      html: '<p>배송을 마치면서 마을이 카이랄 네트워크에 연결됐다. 이 세계의 통신망이다. 연결된 곳에서는 도로 복구 장치 같은 시설이 작동한다.</p>' +
-        '<p>아까 지나온 장치에도 불이 들어왔다.</p>',
-      buttons: [{ label: '장치로 가기', cls: 'go', fn: () => { unblock(); setObjective('도로 복구 장치로'); startLeg(legToPaver()); } }],
+      title: '마을 · 카이랄 네트워크 연결',
+      html: '<p>배송을 마치면서 마을이 카이랄 네트워크에 연결됐어요. 이 세계의 통신망이에요. 연결된 곳에서는 도로 복구 장치 같은 시설이 작동합니다.</p>' +
+        '<p>아까 지나온 장치에도 불이 들어왔어요.</p>',
+      buttons: [{ label: '장치로 가기', cls: 'go', fn: () => { unblock(); setObjective('도로 복구 장치로 가기'); startLeg(legToPaver()); } }],
     });
   }
 
   function gateBuild() {
-    setObjective('국도 복구', buildSub());
+    setObjective('무너진 국도 잇기', buildSub());
     showPanel({
       tag: TAG.sim,
       title: '국도 복구',
-      html: `<p>무너진 구간을 다시 이으려면 금속 ${NEED}, 세라믹 ${NEED}이 든다. 마을 창고에 둔 내 자재는 금속 ${STOCK.metal}, 세라믹 ${STOCK.ceramic}. 그동안 배송하면서 모은 것이다. 거의 다 들어간다.</p>` +
-        '<p>길이 이어지면 이 구간을 차로 달릴 수 있다. 도로 가운데 선을 따라 달리면 배터리도 닳지 않는다. 다른 배달부들도 이 길을 쓰게 된다.</p>' +
-        `<p class="note">한 번에 질 수 있는 양이 정해져 있어서 창고와 장치를 ${TRIPS}번 오가야 한다. 이 체험에서는 여기서 길을 잇고 넘어간다.</p>`,
+      html: `<p>무너진 구간을 다시 이으려면 금속 ${NEED}, 세라믹 ${NEED}이 필요해요. 마을 창고에 있는 내 자재는 금속 ${STOCK.metal}, 세라믹 ${STOCK.ceramic}. 그동안 배송하며 모은 것이 거의 다 들어갑니다.</p>` +
+        '<p>길이 이어지면 이 구간을 차로 달릴 수 있어요. 도로 가운데 선을 따라 달리면 배터리도 닳지 않고, 다른 배달부들도 이 길을 쓰게 됩니다.</p>' +
+        `<p class="note">한 번에 질 수 있는 양이 정해져 있어서 창고와 장치를 ${TRIPS}번 오가야 해요.</p>`,
       buttons: [{ label: '자재 가지러 가기', cls: 'go', fn: () => { unblock(); S.load = 'none'; setObjective(`자재 나르기 1/${TRIPS} · 창고로`, buildSub()); startLeg(legHaul()); } }],
     });
   }
@@ -777,7 +777,7 @@
     S.load = 'materials';
     S.stun = 0.4;
     setObjective(`자재 나르기 ${i + 1}/${TRIPS} · 장치로`, buildSub());
-    setCaption(i === 0 ? '자재를 졌다. 무거워서 걸음이 느리다.' : i === TRIPS - 1 ? '마지막 짐이다.' : `${i + 1}번째 짐이다.`, 3200);
+    setCaption(i === 0 ? '자재를 졌어요. 무거워서 걸음이 느립니다.' : i === TRIPS - 1 ? '마지막 짐.' : `${i + 1}번째 짐.`, 3200);
   }
   function deposit(last) {
     const per = Math.round(NEED / TRIPS);
@@ -804,9 +804,9 @@
     el.tint.setAttribute('opacity', 0.26);
     showPanel({
       tag: TAG.sim,
-      title: '국도가 이어졌다',
-      html: `<p>남은 자재는 금속 ${S.stock.metal}, 세라믹 ${S.stock.ceramic}. 다음 장비를 만들 여유는 당분간 없다.</p>` +
-        '<p>아직 이 길을 지나간 사람은 없다. 날이 저물었다.</p>',
+      title: '국도 연결 완료',
+      html: `<p>남은 자재는 금속 ${S.stock.metal}, 세라믹 ${S.stock.ceramic}. 당분간 다른 장비를 만들 여유는 없겠어요.</p>` +
+        '<p>아직 이 길을 지나간 사람은 없습니다. 어느새 날이 저물었어요.</p>',
       buttons: [{ label: '마을에서 하룻밤 쉬기', cls: 'go', fn: goNextDay }],
     });
   }
@@ -823,7 +823,7 @@
       el.traces.setAttribute('opacity', 0.9);
       el.roadHolo.show = true;
       setObjective('배송 센터로 돌아가기', '오토바이');
-      setCaption('다음 날 아침. 마을 차고에서 오토바이를 빌렸다. 어제 이은 길로 배송 센터에 돌아간다.', 6000);
+      setCaption('다음 날 아침. 마을 차고에서 오토바이를 빌려, 어제 이은 길로 배송 센터에 돌아갑니다.', 6000);
       startLeg(legRide());
       S.cam = null;
       S.blocked = false;
@@ -842,7 +842,7 @@
     showPanel({
       tag: TAG.others,
       title: '어제 이은 구간',
-      html: '<p>길 위에 바퀴 자국과 발자국이 나 있다. 밤사이 다른 배달부들이 이 길로 지나갔다.</p>' +
+      html: '<p>길 위에 바퀴 자국과 발자국이 나 있어요. 밤사이 다른 배달부들이 이 길을 지나갔습니다.</p>' +
         `<p class="like-line big">${LIKE_ICON}<span>이 구간에 쌓인 좋아요 <b id="road-count">0</b></span></p>` +
         memCard(MEM.road),
       buttons: [{ label: '계속 달리기', cls: 'go', fn: unblock }],
@@ -850,7 +850,7 @@
     const bump = () => { S.roadLikes++; const c = document.getElementById('road-count'); if (c) c.textContent = S.roadLikes; };
     ROAD_LIKES.forEach((n, i) => {
       const go = () => {
-        toast(`배달부 한 명이 당신의 국도를 지나갔다 · 좋아요 ${n}`);
+        toast(`배달부 한 명이 당신의 국도를 지나감 · 좋아요 ${n}`);
         const k = (i + 0.5) / ROAD_LIKES.length;
         const x = P.RB1[0] + (P.RB0[0] - P.RB1[0]) * k, y = P.RB1[1] + (P.RB0[1] - P.RB1[1]) * k - 26;
         receive(x, y, n, bump, 150);
@@ -864,17 +864,17 @@
     el.parked.setAttribute('opacity', 1);
     el.roadHolo.show = false;
     setObjective('배송 센터로 돌아가기', '걸어서');
-    setCaption('도로가 끝나는 곳이다. 오토바이를 세워 두고 걸어간다.', 4500);
+    setCaption('도로가 끝나는 곳. 오토바이를 세워 두고 걸어갑니다.', 4500);
   }
 
   function gateHome() {
     setObjective('배송 센터 도착');
     showPanel({
       tag: TAG.sim,
-      title: '배송 센터에 돌아왔다',
-      html: `<p>첫 배송이 끝났다. 이번에 받은 좋아요는 모두 ${S.likes}개다.</p>` +
-        '<p>작은 배송이 하나 더 있다. 강가 오두막에 상자 하나를 전하는 짧은 길이다.</p>' +
-        '<p class="note">여기서 마쳐도 아래 글과 질문은 그대로 이어진다.</p>',
+      title: '배송 센터 귀환',
+      html: `<p>첫 배송을 마쳤어요. 이번에 받은 좋아요는 모두 ${S.likes}개입니다.</p>` +
+        '<p>짧은 배송이 하나 더 있어요. 강가 오두막에 상자 하나를 전하는 일이에요.</p>' +
+        '<p class="note">여기서 마쳐도 아래 글과 질문으로 이어집니다.</p>',
       buttons: [
         { label: '여기서 마치기', fn: () => finish(false) },
         { label: '작은 배송 하나 더 하기', fn: startExtra },
@@ -888,7 +888,7 @@
     S.moveTime = 0;
     S.timing = true;
     unblock();
-    setObjective('상자 1개 · 강가 오두막으로', cargoSub());
+    setObjective('강가 오두막에 상자 전하기', cargoSub());
     startLeg(legExtra());
   }
   function gateCabin() {
@@ -899,7 +899,7 @@
       tag: TAG.npc,
       title: '배송 완료',
       html: '<p class="who">오두막의 수령인 (게임 속 인물)</p><p class="say">"와 주셨네요. 고마워요."</p>' + resultLine() +
-        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${CABIN_LIKES}개를 보냈다.</span></p>`,
+        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${CABIN_LIKES}개를 보냈어요.</span></p>`,
       buttons: [{ label: '기록 읽기', cls: 'go', fn: () => finish(true) }],
     });
     receive(P.CABIN[0], P.CABIN[1] - 56, CABIN_LIKES);
@@ -911,12 +911,12 @@
     block();
     setObjective(extraDone ? '배송 2건 완료' : '배송 1건 완료');
     setCaption('');
-    qChoice.textContent = extraDone ? '당신은 방금 작은 배송을 하나 더 했다.' : '당신은 첫 배송을 마치고 거기서 멈췄다.';
-    qMain.textContent = '배송 끝에 좋아요가 뜨지 않았다면, 그 선택은 달라졌을까?';
+    qChoice.textContent = extraDone ? '당신은 짧은 배송을 하나 더 했어요.' : '당신은 첫 배송을 마치고 거기서 멈췄어요.';
+    qMain.textContent = '배송 끝에 좋아요가 뜨지 않았다면, 그 선택은 달라졌을까요?';
     showPanel({
       tag: TAG.sim,
-      title: '체험이 끝났다',
-      html: '<p>아래에 이 체험을 만든 이유와, 묻고 싶은 질문이 있다.</p>',
+      title: '체험 끝',
+      html: '<p>아래에 이 체험을 만든 이유와 묻고 싶은 질문이 있어요.</p>',
       buttons: [
         { label: '기록 읽기', cls: 'go', fn: () => document.getElementById('essay').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }) },
         { label: '처음부터 다시', fn: reset },
@@ -1065,8 +1065,8 @@
     S.stun = 0.8;
     S.stumbleT = 0.8;
     sfxThud();
-    setObjective('화물 1개 · 강 건너 마을로', cargoSub());
-    setCaption(`넘어졌다. 화물이 젖었다. 화물 상태 ${S.cargo}%.`, 3500);
+    setObjective('강 건너 마을까지 화물 옮기기', cargoSub());
+    setCaption(`넘어져서 화물이 젖었어요 · 화물 상태 ${S.cargo}%`, 3500);
   }
 
   function step(dt) {
@@ -1242,13 +1242,13 @@
     qChoice.textContent = Q_DEFAULT.choice;
     qMain.textContent = Q_DEFAULT.main;
     setCaption('');
-    setObjective('화물 1개 · 강 건너 마을로', cargoSub());
+    setObjective('강 건너 마을까지 화물 옮기기', cargoSub());
     startLeg(legOut1());
     showPanel({
       tag: TAG.sim,
       title: '배송 의뢰',
-      html: '<p>배송 센터에 있는 화물 하나를 강 건너 마을까지 옮긴다.</p>' +
-        '<p class="note">아래 "앞으로 가기"를 누르고 있으면 움직인다. 키보드는 → 키를 누르고 있으면 된다. 골라야 하는 곳에서는 저절로 멈춘다.</p>',
+      html: '<p>배송 센터의 화물 하나를 강 건너 마을까지 옮기기</p>' +
+        '<p class="note">아래의 "앞으로 가기"를 누르고 있으면 움직입니다. 키보드로는 → 키를 누르고 있으면 돼요. 무언가 골라야 하는 곳에서는 저절로 멈춥니다.</p>',
       focus: false,
     });
     if (e instanceof Event) {
