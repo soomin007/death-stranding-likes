@@ -19,8 +19,6 @@
 <main>
 <section class="hero wrap">
   <h1><span class="nw">작은 좋아요</span> <span class="nw">하나.</span></h1>
-  <p class="lede">게임을 해 본 적 없어도 할 수 있게 짧은 배송 하나를 만들었다.<br>
-    해 보고 나서 마지막 질문에 답해 주면 좋겠다.</p>
 
   <div class="world-intro">
     <p>《Death Stranding》의 주인공은 배달부다.<br>
@@ -40,12 +38,12 @@
   </div>
 
   <div class="hero-actions">
-    <a class="btn primary" href="#play">배송 시작하기</a>
-    <a class="btn" href="#essay">체험 없이 글만 읽기</a>
+    <a class="btn primary" href="#play" data-open="play">배송 시작하기</a>
+    <a class="btn" href="#essay" data-open="essay">글 읽기</a>
   </div>
 </section>
 
-<section id="play" class="play" aria-label="배송 체험">
+<section id="play" class="play" aria-label="배송 체험" hidden>
   <div class="stage" id="stage">
     <svg id="world" role="img" aria-label="강과 깊은 틈, 무너진 국도가 있는 들판. 작은 배달부가 길을 따라 움직인다."></svg>
     <div class="hud">
@@ -72,12 +70,12 @@
   </div>
 
   <div class="play-foot wrap-wide">
-    <a href="#essay">체험 건너뛰고 글 읽기</a>
+    <a href="#essay" data-open="essay">체험 건너뛰고 글 읽기</a>
     <button type="button" class="linkish" id="restart">처음부터 다시</button>
   </div>
 </section>
 
-<article id="essay" class="essay">
+<article id="essay" class="essay" hidden>
   <section class="wrap block">
     <p class="eyebrow">2024년 초의 기억</p>
     <h2>내가 기억하는 좋아요</h2>

@@ -215,6 +215,37 @@
       node('path', { d: `M${x} ${y}q${lean} ${-h / 2} ${lean * 1.6 - 1.5} ${-h}M${x + 3} ${y}q${lean} ${-h / 2} ${lean * 1.6 + 1} ${-h * 1.2}` }, grass);
     }
 
+    // 등고선: 원작 지도처럼 땅의 높낮이를 옅은 선으로 깐다
+    const contour = node('g', { fill: 'none', stroke: '#a9c4ba', 'stroke-width': 1.1, opacity: .09 }, svg);
+    const rc = rng(11);
+    [[300, 420], [560, 820], [1060, 300], [1500, 700], [1900, 380], [2150, 860]].forEach(([hx, hy]) => {
+      const n = 4 + Math.floor(rc() * 3), ph = rc() * 6;
+      for (let k = 1; k <= n; k++) {
+        const rx = 40 + k * 46, ry = rx * .42, pts = [];
+        for (let a = 0; a < 24; a++) {
+          const t = a / 24 * Math.PI * 2, wob = 1 + .12 * Math.sin(t * 3 + ph + k) + .06 * Math.sin(t * 5 - k);
+          pts.push(`${(hx + Math.cos(t) * rx * wob).toFixed(1)},${(hy + Math.sin(t) * ry * wob).toFixed(1)}`);
+        }
+        node('polygon', { points: pts.join(' ') }, contour);
+      }
+    });
+    // 이끼 · 큰 바위 (강과 틈은 피한다)
+    const clear = (x) => (x < 730 || x > 970) && (x < 1140 || x > 1300);
+    const moss = node('g', { fill: '#4f6e4f' }, svg);
+    for (let i = 0; i < 40; i++) {
+      const x = rc() * W, y = 230 + rc() * 740;
+      if (!clear(x)) continue;
+      for (let j = 0; j < 4; j++) node('ellipse', { cx: x + (rc() - .5) * 60, cy: y + (rc() - .5) * 20, rx: 14 + rc() * 26, ry: 5 + rc() * 8, opacity: .12 + rc() * .12 }, moss);
+    }
+    const boulders = node('g', {}, svg);
+    for (let i = 0; i < 22; i++) {
+      const x = rc() * W, y = 240 + rc() * 720, s = 14 + rc() * 22;
+      if (!clear(x)) continue;
+      node('ellipse', { cx: x + s * .2, cy: y + s * .35, rx: s * 1.2, ry: s * .3, fill: '#152120', opacity: .5 }, boulders);
+      node('path', { d: `M${x - s} ${y + s * .3} L${x - s * .6} ${y - s * .5} L${x + s * .1} ${y - s * .8} L${x + s * .8} ${y - s * .3} L${x + s} ${y + s * .3}Z`, fill: '#4b5d5c' }, boulders);
+      node('path', { d: `M${x - s * .6} ${y - s * .5} L${x + s * .1} ${y - s * .8} L${x + s * .8} ${y - s * .3} L${x + s * .1} ${y - s * .2}Z`, fill: '#647877' }, boulders);
+    }
+
     // 틈
     node('path', { d: 'M1216 430 L1198 500 L1176 600 L1190 690 L1172 780 L1186 880 L1196 1000 L1262 1000 L1252 880 L1268 780 L1250 690 L1270 600 L1250 500 L1232 430Z', fill: 'url(#g-crack)' }, svg);
     node('path', { d: 'M1198 500 L1176 600 L1190 690 L1172 780 L1186 880 L1196 1000', fill: 'none', stroke: '#6d8483', 'stroke-width': 2.5 }, svg);
@@ -743,7 +774,7 @@
       html: '<p class="who">마을의 수령인 (게임 속 인물)</p>' +
         `<p class="say">${good ? '"먼 길 오셨네요. 잘 받았습니다."' : '"상자가 좀 젖었네요. 그래도 와 주셔서 다행이에요."'}</p>` +
         resultLine() +
-        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${TOWN_LIKES}개를 보냈어요. 게임이 정해 둔 반응입니다.</span></p>` +
+        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${TOWN_LIKES}개를 보냈어요.</span></p>` +
         memCard(MEM.npc),
       buttons: [{ label: '다음', cls: 'go', fn: showNetwork }],
     });
@@ -921,11 +952,11 @@
       title: '체험 끝',
       html: '<p>아래에 이 체험을 만든 이유와 묻고 싶은 질문이 있어요.</p>',
       buttons: [
-        { label: '기록 읽기', cls: 'go', fn: () => document.getElementById('essay').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }) },
+        { label: '기록 읽기', cls: 'go', fn: () => openSection('essay') },
         { label: '처음부터 다시', fn: reset },
       ],
     });
-    if (extraDone) document.getElementById('essay').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    if (extraDone) openSection('essay');
   }
 
   // ---------- 입력 ----------
@@ -1262,6 +1293,26 @@
     }
   }
 
+  function openSection(id) {
+    const sec = document.getElementById(id);
+    const was = sec.hidden;
+    sec.hidden = false;
+    if (id === 'play') {
+      measure();
+      if (was) reset(new Event('open')); else sec.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    } else {
+      sec.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    }
+  }
+  function bindOpeners() {
+    document.querySelectorAll('[data-open]').forEach((a) => a.addEventListener('click', (e) => {
+      e.preventDefault();
+      openSection(a.dataset.open);
+    }));
+    const h = location.hash.slice(1);
+    if (h === 'play' || h === 'essay' || h === 'question') openSection(h === 'question' ? 'essay' : h);
+  }
+
   function init() {
     drawWorld();
     bindInput();
@@ -1269,6 +1320,7 @@
     window.addEventListener('resize', measure);
     if ('ResizeObserver' in window) new ResizeObserver(measure).observe(stage);
     reset();
+    bindOpeners();
     requestAnimationFrame(frame);
   }
   init();
@@ -1285,6 +1337,7 @@
     },
     walkTo(t) { if (S.leg && !S.blocked) { S.t = Math.max(S.t, Math.min(t, S.leg.len) - 1); } },
     timers: () => timers.size,
-    tick(dt) { step(dt); render(dt); },   // 탭이 가려져 rAF 가 멈춘 상태에서 검수할 때만 쓴다
+    tick(dt) { step(dt); render(dt); },
+    open: openSection,   // 탭이 가려져 rAF 가 멈춘 상태에서 검수할 때만 쓴다
   };
 })();
