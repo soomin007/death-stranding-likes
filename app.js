@@ -545,7 +545,7 @@
   const TAG = {
     sim: '<span class="tag tag-sim">체험</span>',
     npc: '<span class="tag tag-sim">NPC 반응</span>',
-    others: '<span class="tag tag-sim">다른 배달부의 반응 · 예시</span>',
+    others: '<span class="tag tag-sim">다른 배달부의 반응</span>',
   };
   const MEM = {
     ladder: '실제로 플레이할 때, 다른 유저가 시의적절한 곳에 남긴 사다리에 좋아요를 눌러 본 적이 있다.',
@@ -844,7 +844,6 @@
       title: '어제 이은 구간',
       html: '<p>길 위에 바퀴 자국과 발자국이 나 있다. 밤사이 다른 배달부들이 이 길로 지나갔다.</p>' +
         `<p class="like-line big">${LIKE_ICON}<span>이 구간에 쌓인 좋아요 <b id="road-count">0</b></span></p>` +
-        '<p class="note">배달부와 숫자는 이 체험이 지어낸 예시다. 실제 사람의 반응이 아니다.</p>' +
         memCard(MEM.road),
       buttons: [{ label: '계속 달리기', cls: 'go', fn: unblock }],
     });
