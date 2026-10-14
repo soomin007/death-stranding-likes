@@ -1295,6 +1295,7 @@
       measure();
       if (was) reset(new Event('open')); else sec.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
     } else {
+      document.getElementById('foot').hidden = false;   // 참고 자료도 글과 함께 연다
       sec.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
     }
   }
