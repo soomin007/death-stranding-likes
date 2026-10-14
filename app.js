@@ -109,9 +109,6 @@
   const soundBtn = $('#sound');
   const dayfade = $('#dayfade');
   const hud = $('.hud');
-  const qChoice = $('#q-choice');
-  const qMain = $('#q-main');
-  const Q_DEFAULT = { choice: qChoice.textContent, main: qMain.textContent };
   const el = { holos: [] };
 
   function node(tag, attrs, parent) {
@@ -531,7 +528,8 @@
       panel.appendChild(h);
       panel.setAttribute('aria-label', opts.title);
     }
-    if (opts.html) panel.insertAdjacentHTML('beforeend', opts.html.replace(SENT, '$1<br>'));
+    if (opts.html) panel.insertAdjacentHTML('beforeend', opts.html.replace(/<p( class="say")?([^>]*)>([\s\S]*?)<\/p>/g,
+      (m, say, attr, body) => say ? m : `<p${attr}>${body.replace(SENT, '$1<br>')}</p>`));
     const btns = [];
     if (opts.buttons && opts.buttons.length) {
       const row = document.createElement('div');
@@ -945,8 +943,6 @@
     block();
     setObjective(extraDone ? '배송 2건 완료' : '배송 1건 완료');
     setCaption('');
-    qChoice.textContent = extraDone ? '당신은 짧은 배송을 하나 더 했어요.' : '당신은 첫 배송을 마치고 거기서 멈췄어요.';
-    qMain.textContent = '배송 끝에 좋아요가 뜨지 않았다면, 그 선택은 달라졌을까요?';
     showPanel({
       tag: TAG.sim,
       title: '체험 끝',
@@ -1273,8 +1269,6 @@
     el.cabinLight.setAttribute('opacity', .35);
     el.pavLight.setAttribute('fill', '#d9a35a');
     renderBuild();
-    qChoice.textContent = Q_DEFAULT.choice;
-    qMain.textContent = Q_DEFAULT.main;
     setCaption('');
     setObjective('강 건너 마을까지 화물 옮기기', cargoSub());
     startLeg(legOut1());
