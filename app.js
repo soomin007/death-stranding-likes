@@ -458,6 +458,7 @@
     t.className = 'toast';
     t.innerHTML = LIKE_ICON + '<span></span>';
     t.querySelector('span').textContent = text;
+    toasts.style.top = (hud.offsetTop + hud.offsetHeight + 8) + 'px';   // 목표 칩이 몇 줄이든 그 아래
     toasts.prepend(t);
     while (toasts.children.length > 3) toasts.lastChild.remove();
     later(() => { t.classList.add('out'); later(() => t.remove(), 500); }, 4200);
@@ -472,7 +473,9 @@
   function buildSub() {
     return `복구 ${Math.round(S.built * 100)}% · 금속 ${S.stock.metal} · 세라믹 ${S.stock.ceramic}`;
   }
+  const SENT = /([가-힣][.?!])\s+(?=[가-힣"(])/g;   // 문장 경계: 한 문장씩 줄을 나눈다
   function setCaption(text, ms) {
+    text = text.replace(SENT, '$1\n');
     caption.textContent = text;
     if (ms) {
       const mine = text;
@@ -481,7 +484,7 @@
   }
   const fmtTime = (s) => { const n = Math.round(s); return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`; };
   function resultLine() {
-    return `<p class="stats"><span>이동 시간 ${fmtTime(S.moveTime)}</span><span>화물 상태 ${S.cargo}%</span></p>`;
+    return `<dl class="rows"><dt>이동 시간</dt><dd class="num">${fmtTime(S.moveTime)}</dd><dt>화물 상태</dt><dd class="num">${S.cargo}%</dd></dl>`;
   }
   function memCard(text) {
     return `<div class="mem-card"><span class="tag tag-mem">기억</span><p>${text}</p></div>`;
@@ -497,7 +500,7 @@
       panel.appendChild(h);
       panel.setAttribute('aria-label', opts.title);
     }
-    if (opts.html) panel.insertAdjacentHTML('beforeend', opts.html);
+    if (opts.html) panel.insertAdjacentHTML('beforeend', opts.html.replace(SENT, '$1<br>'));
     const btns = [];
     if (opts.buttons && opts.buttons.length) {
       const row = document.createElement('div');
@@ -1245,10 +1248,12 @@
     setObjective('강 건너 마을까지 화물 옮기기', cargoSub());
     startLeg(legOut1());
     showPanel({
-      tag: TAG.sim,
+      tag: TAG.sim + '<span class="order-no">ORDER No. 001</span>',
       title: '배송 의뢰',
-      html: '<p>배송 센터의 화물 하나를 강 건너 마을까지 옮기기</p>' +
-        '<p class="note">아래의 "앞으로 가기"를 누르고 있으면 움직입니다. 키보드로는 → 키를 누르고 있으면 돼요. 무언가 골라야 하는 곳에서는 저절로 멈춥니다.</p>',
+      html: '' +
+        '<p class="goal">배송 센터의 화물 하나를 강 건너 마을까지 옮기기</p>' +
+        '<dl class="rows rows-h"><div><dt>의뢰처</dt><dd>배송 센터</dd></div><div><dt>목적지</dt><dd>강 건너 마을</dd></div><div><dt>화물</dt><dd>상자 1개</dd></div></dl>' +
+        '<p class="note">아래의 "앞으로 가기"를 누르고 있으면 움직입니다.</p>',
       focus: false,
     });
     if (e instanceof Event) {
