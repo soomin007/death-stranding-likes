@@ -268,6 +268,8 @@ h1, h2, h3 { font-weight: 500; }
 .abstract blockquote p { font-size: clamp(20px, 3vw, 24px); line-height: 1.6; color: var(--ink); font-weight: 500; margin-bottom: 14px; }
 .abstract .orig { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 15px; font-weight: 400; color: var(--dim); }
 .abstract figcaption { font-size: 13.5px; color: var(--faint); }
+.q-quote { margin-block: 8px 56px; }
+.q-quote blockquote p { font-size: clamp(18px, 2.4vw, 21px) !important; }
 
 .question {
   background: radial-gradient(ellipse at 50% 40%, #2a433b, var(--bg) 75%); color: var(--ink);
