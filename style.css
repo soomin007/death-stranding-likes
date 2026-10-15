@@ -99,6 +99,8 @@ h1, h2, h3 { font-weight: 500; }
 /* 글 사이의 공식 스크린샷 */
 .shot { margin-inline: 0; margin-block: 40px; }
 .shot img { display: block; width: 100%; height: auto; }
+/* 움짤(정사각 영상)은 글 폭을 다 쓰지 않고 가운데 작게 */
+.shot-clip video { display: block; width: min(100%, 420px); height: auto; margin-inline: auto; background: #0b1214; }
 .hero h1 {
   font-size: clamp(40px, 10.5vw, 96px); line-height: 1.15; letter-spacing: -.02em;
   margin: 0 0 24px; font-weight: 400;
@@ -350,8 +352,8 @@ h1, h2, h3 { font-weight: 500; }
 .rv { opacity: 0; transform: translateY(22px); transition: opacity .9s ease-out, transform .9s cubic-bezier(.2, .6, .2, 1); }
 .rv.in { opacity: 1; transform: none; }
 .shot.rv { transform: none; }
-.shot.rv img { clip-path: inset(6% 6% 6% 6%); transform: scale(1.04); transition: clip-path 1.2s cubic-bezier(.2, .6, .2, 1), transform 1.6s cubic-bezier(.2, .6, .2, 1); }
-.shot.rv.in img { clip-path: inset(0 0 0 0); transform: none; }
+.shot.rv img, .shot.rv video { clip-path: inset(6% 6% 6% 6%); transform: scale(1.04); transition: clip-path 1.2s cubic-bezier(.2, .6, .2, 1), transform 1.6s cubic-bezier(.2, .6, .2, 1); }
+.shot.rv.in img, .shot.rv.in video { clip-path: inset(0 0 0 0); transform: none; }
 
 /* 글 읽는 위치: 화면 맨 위의 가는 하늘색 선 (원작 지도의 경로선처럼) */
 .progress {
@@ -362,7 +364,7 @@ h1, h2, h3 { font-weight: 500; }
 .progress.on { opacity: .75; }
 
 @media (prefers-reduced-motion: reduce) {
-  .rv, .shot.rv img { opacity: 1; transform: none; clip-path: none; }
+  .rv, .shot.rv img, .shot.rv video { opacity: 1; transform: none; clip-path: none; }
   .hero-art::before { transform: none; }
   .progress { display: none; }
 }

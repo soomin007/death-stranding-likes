@@ -1045,10 +1045,10 @@
     noiseBuf = makeNoise(1, false);
     // 바람: 갈색 잡음의 낮은 음역. 서로 다른 속도의 LFO 두 개가 필터와 세기를 흔들어 돌풍을 만든다
     const wind = loopNoise(brown, 'lowpass', 520);
-    windGain = ac.createGain(); windGain.gain.value = 0.3;
+    windGain = ac.createGain(); windGain.gain.value = 0.11;
     wind.g.disconnect(); wind.g.gain.value = 1; wind.g.connect(windGain).connect(bus);
     lfo(0.07, 260, wind.f.frequency);
-    lfo(0.13, 0.12, windGain.gain);
+    lfo(0.13, 0.045, windGain.gain);
     // 물소리: 흰 잡음을 가운데 음역만 남긴다
     const water = loopNoise(noiseBuf, 'bandpass', 1300, 0.7);
     waterGain = water.g;
@@ -1081,7 +1081,7 @@
     const audible = !document.hidden && stageInView() && !document.getElementById('play').hidden;
     bus.gain.setTargetAtTime(audible ? 1 : 0, t, 0.6);
     const near = Math.max(0, 1 - Math.abs(pos.x - RIVER_X) / RIVER_REACH);
-    waterGain.gain.setTargetAtTime(0.05 + near * 0.16, t, 0.5);
+    waterGain.gain.setTargetAtTime(0.015 + near * 0.07, t, 0.5);
     const riding = S.mode === 'trike';
     engineGain.gain.setTargetAtTime(riding ? (S.walking ? 0.09 : 0.035) : 0, t, 0.3);
     engineOsc.frequency.setTargetAtTime(riding && S.walking ? 72 : 46, t, 0.4);
@@ -1401,6 +1401,12 @@
       }), { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
       const sel = '.block > h2, .block > p, .memory, .shot, .question .eyebrow, .q-quote, .question h2, .question .wrap > p';
       essay.querySelectorAll(sel).forEach((n) => { n.classList.add('rv'); io.observe(n); });
+      // 움짤은 화면에 보일 때만 재생한다 (동작 줄이기에서는 정지 화면만)
+      const vio = new IntersectionObserver((ents) => ents.forEach((en) => {
+        const v = en.target;
+        if (en.isIntersecting) { const pr = v.play(); if (pr) pr.catch(() => {}); } else v.pause();
+      }), { threshold: 0.3 });
+      essay.querySelectorAll('video').forEach((v) => vio.observe(v));
       essay.querySelectorAll('.question .wrap > *').forEach((n, i) => { n.style.transitionDelay = (i * 0.18).toFixed(2) + 's'; });
     }
     let ticking = false;
