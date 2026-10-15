@@ -100,7 +100,7 @@ h1, h2, h3 { font-weight: 500; }
 .shot { margin-inline: 0; margin-block: 40px; }
 .shot img { display: block; width: 100%; height: auto; }
 /* 움짤(정사각 영상)은 글 폭을 다 쓰지 않고 가운데 작게 */
-.shot-clip video { display: block; width: min(100%, 420px); height: auto; margin-inline: auto; background: #0b1214; }
+.shot-clip video { cursor: pointer; display: block; width: min(100%, 420px); height: auto; margin-inline: auto; background: #0b1214; }
 .hero h1 {
   font-size: clamp(40px, 10.5vw, 96px); line-height: 1.15; letter-spacing: -.02em;
   margin: 0 0 24px; font-weight: 400;

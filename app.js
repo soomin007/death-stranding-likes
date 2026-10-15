@@ -781,7 +781,7 @@
       tag: TAG.sim,
       title: '국도 복구',
       html: `<p>무너진 구간을 다시 이으려면 금속 ${NEED}, 세라믹 ${NEED}이 필요해요. 마을 창고에 있는 내 자재는 금속 ${STOCK.metal}, 세라믹 ${STOCK.ceramic}. 그동안 배송하며 모은 것이 거의 다 들어갑니다.</p>` +
-        '<p>길이 이어지면 이 구간을 차로 달릴 수 있어요. 도로 가운데 선을 따라 달리면 배터리도 닳지 않고, 다른 배달부들도 이 길을 쓰게 됩니다.</p>' +
+        '<p>길이 이어지면 이 구간을 차로 달릴 수 있어요. 이 길 위에서는 차 배터리도 충전되고, 다른 배달부들도 이 길을 쓰게 됩니다.</p>' +
         `<p class="note">한 번에 질 수 있는 양이 정해져 있어서 창고와 장치를 ${TRIPS}번 오가야 해요.</p>`,
       buttons: [{ label: '자재 가지러 가기', cls: 'go', fn: () => { unblock(); S.load = 'none'; setObjective(`자재 나르기 1/${TRIPS} · 창고로`, buildSub()); startLeg(legHaul()); } }],
     });
@@ -912,7 +912,7 @@
       title: '배송 완료',
       html: '<p class="who">오두막의 수령인 (게임 속 인물)</p><p class="say">"와 주셨네요. 고마워요."</p>' + resultLine() +
         `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${CABIN_LIKES}개를 보냈어요.</span></p>`,
-      buttons: [{ label: '기록 읽기', cls: 'go', fn: () => finish(true) }],
+      buttons: [{ label: '글 읽기', cls: 'go', fn: () => finish(true) }],
     });
     receive(P.CABIN[0], P.CABIN[1] - 56, CABIN_LIKES);
   }
@@ -926,9 +926,9 @@
     showPanel({
       tag: TAG.sim,
       title: '체험 끝',
-      html: '<p>아래에 이 체험을 만든 이유와 묻고 싶은 질문이 있어요.</p>',
+      html: '<p>아래에 이 체험의 바탕이 된 기억과 묻고 싶은 질문이 있어요.</p>',
       buttons: [
-        { label: '기록 읽기', cls: 'go', fn: () => openSection('essay') },
+        { label: '글 읽기', cls: 'go', fn: () => openSection('essay') },
         { label: '처음부터 다시', fn: reset },
       ],
     });
@@ -1384,9 +1384,13 @@
       // 움짤은 화면에 보일 때만 재생한다 (동작 줄이기에서는 정지 화면만)
       const vio = new IntersectionObserver((ents) => ents.forEach((en) => {
         const v = en.target;
-        if (en.isIntersecting) { const pr = v.play(); if (pr) pr.catch(() => {}); } else v.pause();
+        if (en.isIntersecting) { if (v.dataset.held) return; const pr = v.play(); if (pr) pr.catch(() => {}); } else v.pause();
       }), { threshold: 0.3 });
-      essay.querySelectorAll('video').forEach((v) => vio.observe(v));
+      essay.querySelectorAll('video').forEach((v) => {
+        vio.observe(v);
+        // 계속 도는 영상은 멈출 수 있어야 한다: 누르면 멈춤 · 다시 재생
+        v.addEventListener('click', () => { v.dataset.held = v.paused ? '' : '1'; if (v.paused) v.play(); else v.pause(); });
+      });
       essay.querySelectorAll('.question .wrap > *').forEach((n, i) => { n.style.transitionDelay = (i * 0.18).toFixed(2) + 's'; });
     }
     let ticking = false;
