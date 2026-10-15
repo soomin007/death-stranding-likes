@@ -99,14 +99,9 @@ h1, h2, h3 { font-weight: 500; }
 /* 글 사이의 공식 스크린샷 */
 .shot { margin-inline: 0; margin-block: 40px; }
 .shot img { display: block; width: 100%; height: auto; }
-/* GIF 대신 쓰는 정사각 영상은 글 폭을 다 쓰지 않고 가운데 작게 */
+/* GIF 대신 쓰는 영상: 다른 사진과 같은 폭, 아래에 설명 */
 .shot-clip video { cursor: pointer; display: block; width: 100%; height: auto; background: #0b1214; }
-.shot-clip figcaption { font-size: 15px; line-height: 1.7; color: var(--dim); margin-top: 12px; }
-/* 넓은 화면: 정사각 영상 옆에 설명을 두어 혼자 뜨지 않게 */
-@media (min-width: 641px) {
-  .shot-clip { display: grid; grid-template-columns: minmax(0, 340px) 1fr; gap: 28px; align-items: center; }
-  .shot-clip figcaption { margin-top: 0; padding-bottom: 6px; }
-}
+.shot-clip figcaption { font-size: 14.5px; line-height: 1.7; color: var(--dim); margin-top: 12px; }
 .hero h1 {
   font-size: clamp(40px, 10.5vw, 96px); line-height: 1.15; letter-spacing: -.02em;
   margin: 0 0 24px; font-weight: 400;
@@ -385,7 +380,7 @@ h1, h2, h3 { font-weight: 500; }
   .top, .play, .hero-actions, .progress, .shot-clip video, .disclose { display: none !important; }
   .print-note { display: block; font-size: 10pt; color: #444; margin: 0 0 6mm; }
   .essay[hidden], .foot[hidden] { display: block !important; }
-  .shot img.print-only { display: block; width: 60mm; height: auto; margin-inline: auto; }
+  .shot img.print-only { display: block; width: 100%; height: auto; }
   .hero-art { height: 60mm; }
   .hero-art::before { opacity: 1 !important; scale: 1 !important; }
   .hero { padding-bottom: 0; }
