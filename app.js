@@ -1381,7 +1381,7 @@
       }), { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
       const sel = '.block > h2, .block > p, .memory, .shot, .question .eyebrow, .q-quote, .question h2, .question .wrap > p';
       essay.querySelectorAll(sel).forEach((n) => { n.classList.add('rv'); io.observe(n); });
-      // 움짤은 화면에 보일 때만 재생한다 (동작 줄이기에서는 정지 화면만)
+      // GIF 대신 쓰는 영상은 화면에 보일 때만 재생한다 (동작 줄이기에서는 정지 화면만)
       const vio = new IntersectionObserver((ents) => ents.forEach((en) => {
         const v = en.target;
         if (en.isIntersecting) { if (v.dataset.held) return; const pr = v.play(); if (pr) pr.catch(() => {}); } else v.pause();
