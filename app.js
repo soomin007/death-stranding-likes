@@ -514,9 +514,6 @@
   function resultLine() {
     return `<dl class="rows"><dt>이동 시간</dt><dd class="num">${fmtTime(S.moveTime)}</dd><dt>화물 상태</dt><dd class="num">${S.cargo}%</dd></dl>`;
   }
-  function memCard(text) {
-    return `<div class="mem-card"><span class="tag tag-mem">기억</span><p>${text}</p></div>`;
-  }
 
   // opts: { tag, title, html, buttons:[{label, sub, cls, id, fn}], focus }
   function showPanel(opts) {
@@ -578,11 +575,6 @@
     sim: '<span class="tag tag-sim">체험</span>',
     npc: '<span class="tag tag-sim">NPC 반응</span>',
     others: '<span class="tag tag-sim">다른 배달부의 반응</span>',
-  };
-  const MEM = {
-    ladder: '실제로 플레이할 때, 다른 유저가 시의적절한 곳에 남긴 사다리에 좋아요를 눌러 본 적이 있다.',
-    npc: 'NPC가 자동으로 남기는 반응인 줄 알면서도, 퀘스트를 끝낼 때마다 받는 작은 좋아요에 성취감을 느꼈다. 그래서 서브퀘스트까지 스스로 찾아다녔던 것 같다.',
-    road: '국도를 연결하고 나면, 다음에 그 길을 지날 때마다 좋아요가 쌓여 있었다. 그걸 보면서 뿌듯했다.',
   };
 
   // 판단이 필요한 장면에서 카메라가 비춰야 할 세계 영역 (패널에 가리지 않는 빈 공간에 맞춘다)
@@ -725,7 +717,7 @@
       tag: TAG.sim,
       title: '사다리 표지판',
       html: '<p>사다리 끝에 놓은 사람의 표지판이 떠 있어요. 누르는 만큼 좋아요가 전해집니다.</p>' +
-        '<p class="note">보내지 않고 지나가도 괜찮아요.</p><p class="sent" id="sent" aria-live="polite"></p><div id="mem-slot"></div>',
+        '<p class="note">보내지 않고 지나가도 괜찮아요.</p><p class="sent" id="sent" aria-live="polite"></p>',
       buttons: [
         { label: LIKE_ICON + '좋아요', cls: 'like-btn', id: 'like-btn', fn: sendLike },
         { label: '그냥 지나가기', id: 'pass-btn', fn: passLadder },
@@ -743,22 +735,12 @@
     if (sent) sent.textContent = `보낸 좋아요 ${S.sentLikes}` + (S.sentLikes >= LIKE_CAP ? ' · 한 번에 보낼 수 있는 만큼 다 보냈어요.' : '');
     if (S.sentLikes >= LIKE_CAP) { const b = document.getElementById('like-btn'); if (b) b.disabled = true; }
     if (S.sentLikes === 1) {
-      const slot = document.getElementById('mem-slot');
-      if (slot) slot.innerHTML = memCard(MEM.ladder);
       const pass = document.getElementById('pass-btn');
       if (pass) pass.textContent = '계속 가기';
       S.panelH = panel.offsetHeight;
     }
   }
-  function passLadder() {
-    if (S.sentLikes > 0) { unblock(); return; }
-    showPanel({
-      tag: TAG.sim,
-      title: '사다리를 지나며',
-      html: memCard(MEM.ladder),
-      buttons: [{ label: '계속 가기', cls: 'go', fn: unblock }],
-    });
-  }
+  function passLadder() { unblock(); }
 
   // ---------- 게이트: 마을 · 국도 ----------
   function gateDeliver() {
@@ -772,8 +754,7 @@
       html: '<p class="who">마을의 수령인 (게임 속 인물)</p>' +
         `<p class="say">${good ? '"먼 길 오셨네요. 잘 받았습니다."' : '"상자가 좀 젖었네요. 그래도 와 주셔서 다행이에요."'}</p>` +
         resultLine() +
-        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${TOWN_LIKES}개를 보냈어요.</span></p>` +
-        memCard(MEM.npc),
+        `<p class="like-line">${LIKE_ICON}<span>수령인이 좋아요 ${TOWN_LIKES}개를 보냈어요.</span></p>`,
       buttons: [{ label: '다음', cls: 'go', fn: showNetwork }],
     });
     setObjective('배송 완료', cargoSub());
@@ -875,8 +856,7 @@
       tag: TAG.others,
       title: '어제 이은 구간',
       html: '<p>길 위에 바퀴 자국과 발자국이 나 있어요. 밤사이 다른 배달부들이 이 길을 지나갔습니다.</p>' +
-        `<p class="like-line big">${LIKE_ICON}<span>이 구간에 쌓인 좋아요 <b id="road-count">0</b></span></p>` +
-        memCard(MEM.road),
+        `<p class="like-line big">${LIKE_ICON}<span>이 구간에 쌓인 좋아요 <b id="road-count">0</b></span></p>`,
       buttons: [{ label: '계속 달리기', cls: 'go', fn: unblock }],
     });
     const bump = () => { S.roadLikes++; const c = document.getElementById('road-count'); if (c) c.textContent = S.roadLikes; };

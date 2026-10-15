@@ -113,10 +113,8 @@ h1, h2, h3 { font-weight: 500; }
   background: var(--bg2); border: 1px solid var(--line); border-radius: 4px;
   padding-block: 16px; padding-inline: 18px; margin-bottom: 30px; font-size: 14.5px; color: var(--dim);
 }
-.disclose p { margin: 0 0 12px; }
+.disclose p { margin: 0; }
 .disclose strong { color: var(--ink); font-weight: 500; }
-.legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; }
-.legend .tag { margin-right: 6px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* 체험 */
@@ -203,10 +201,6 @@ h1, h2, h3 { font-weight: 500; }
 .panel .say { color: var(--ink); font-size: 16px; }
 .panel .who { color: var(--faint); font-size: 13px; margin-bottom: 4px; }
 .panel .note { font-size: 13px; color: var(--faint); }
-.panel .mem-card {
-  border-top: 1px solid #ffffff1f; margin-top: 12px; padding-top: 12px; color: var(--dim); font-size: 14.5px;
-}
-.panel .mem-card .tag { margin-bottom: 6px; }
 .opts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .opt {
   touch-action: manipulation;
@@ -306,7 +300,6 @@ h1, h2, h3 { font-weight: 500; }
   }
   .panel h3 { font-size: 16px; margin-block: 4px; }
   .panel p { margin-bottom: 8px; }
-  .panel .mem-card { font-size: 13.5px; margin-top: 8px; padding-top: 8px; }
   .opts { gap: 8px; margin-top: 8px; }
   .opt { min-height: 44px; padding-block: 8px; font-size: 14.5px; }
   .walk { flex: 1 1 auto; justify-content: center; }
@@ -372,4 +365,29 @@ h1, h2, h3 { font-weight: 500; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+/* 인쇄 · PDF 대체본: 체험은 빼고 소개 · 글 · 참고 자료만, 밝은 종이에 어두운 글자로 */
+.shot img.print-only, .print-note { display: none; }
+@media print {
+  @page { margin: 16mm 14mm; }
+  :root { color-scheme: light; --ink: #1a1a1a; --dim: #444; --faint: #666; --accent: #1f5f4a; --mem: #8a5a00; }
+  html, body { background: #fff !important; color: #1a1a1a; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .rv, .shot.rv img, .shot.rv video { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+  .top, .play, .hero-actions, .progress, .shot-clip video, .disclose { display: none !important; }
+  .print-note { display: block; font-size: 10pt; color: #444; margin: 0 0 6mm; }
+  .essay[hidden], .foot[hidden] { display: block !important; }
+  .shot img.print-only { display: block; width: 60mm; height: auto; margin-inline: auto; }
+  .hero-art { height: 60mm; }
+  .hero-art::before { opacity: 1 !important; scale: 1 !important; }
+  .hero { padding-bottom: 0; }
+  .hero h1 { font-size: 30pt; }
+  .disclose { background: none; border-color: #ccc; color: #444; }
+  .essay, .question { background: none !important; border: 0; color: #1a1a1a; }
+  .essay p, .question p, .abstract blockquote p { color: #1a1a1a !important; }
+  .block { padding-top: 12mm; padding-bottom: 6mm; }
+  .question { padding-top: 10mm; padding-bottom: 10mm; break-inside: avoid; }
+  .memory, .shot, .q-quote { break-inside: avoid; }
+  .foot a { color: #1f5f4a; }
 }
