@@ -1009,31 +1009,99 @@
   }
 
   // ---------- 소리 (기본 꺼짐, 브라우저에서 합성) ----------
-  let ac = null, windGain = null, soundOn = false;
+  // 바람은 늘 깔리고 느린 돌풍으로 세기가 오르내린다. 강 가까이에서는 물소리가 커진다.
+  // 걸으면 발소리(물속에서는 첨벙, 사다리에서는 쇳소리), 오토바이를 타면 낮은 엔진음이 난다.
+  let ac = null, bus = null, windGain = null, waterGain = null, engineGain = null, engineOsc = null, noiseBuf = null, soundOn = false;
+  const RIVER_X = 830, RIVER_REACH = 320;   // 첫 강의 가운데와 물소리가 들리는 거리 (세계 좌표)
+  function makeNoise(sec, brown) {
+    const len = ac.sampleRate * sec, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; } else d[i] = w;
+    }
+    return buf;
+  }
+  function loopNoise(buf, filterType, freq, q) {
+    const src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+    const f = ac.createBiquadFilter(); f.type = filterType; f.frequency.value = freq; if (q) f.Q.value = q;
+    const g = ac.createGain(); g.gain.value = 0;
+    src.connect(f).connect(g).connect(bus);
+    src.start();
+    return { f, g };
+  }
+  function lfo(rate, depth, target) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = rate; g.gain.value = depth;
+    o.connect(g).connect(target);
+    o.start();
+  }
+  function buildSound() {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return false;
+    ac = new Ctx();
+    bus = ac.createGain(); bus.gain.value = 0; bus.connect(ac.destination);
+    const brown = makeNoise(6, true);
+    noiseBuf = makeNoise(1, false);
+    // 바람: 갈색 잡음의 낮은 음역. 서로 다른 속도의 LFO 두 개가 필터와 세기를 흔들어 돌풍을 만든다
+    const wind = loopNoise(brown, 'lowpass', 520);
+    windGain = ac.createGain(); windGain.gain.value = 0.3;
+    wind.g.disconnect(); wind.g.gain.value = 1; wind.g.connect(windGain).connect(bus);
+    lfo(0.07, 260, wind.f.frequency);
+    lfo(0.13, 0.12, windGain.gain);
+    // 물소리: 흰 잡음을 가운데 음역만 남긴다
+    const water = loopNoise(noiseBuf, 'bandpass', 1300, 0.7);
+    waterGain = water.g;
+    lfo(0.4, 250, water.f.frequency);
+    // 엔진: 낮은 톱니파를 막아 웅웅거리게
+    engineOsc = ac.createOscillator(); engineOsc.type = 'sawtooth'; engineOsc.frequency.value = 48;
+    const elp = ac.createBiquadFilter(); elp.type = 'lowpass'; elp.frequency.value = 220;
+    engineGain = ac.createGain(); engineGain.gain.value = 0;
+    engineOsc.connect(elp).connect(engineGain).connect(bus);
+    engineOsc.start();
+    return true;
+  }
   function toggleSound() {
     soundOn = !soundOn;
     soundBtn.setAttribute('aria-pressed', String(soundOn));
     soundBtn.textContent = soundOn ? '소리 켜짐' : '소리 꺼짐';
-    if (soundOn) {
-      if (!ac) {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        ac = new Ctx();
-        // 갈색 잡음을 낮은 음역만 남겨 바람 소리로 쓴다
-        const len = ac.sampleRate * 4, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
-        let last = 0;
-        for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.2; }
-        const src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
-        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
-        windGain = ac.createGain(); windGain.gain.value = 0;
-        src.connect(lp).connect(windGain).connect(ac.destination);
-        src.start();
-      }
-      ac.resume();
-      windGain.gain.setTargetAtTime(0.32, ac.currentTime, 0.8);
-    } else if (ac) {
-      windGain.gain.setTargetAtTime(0, ac.currentTime, 0.2);
-    }
+    if (soundOn && !ac && !buildSound()) return;
+    if (!ac) return;
+    if (soundOn) ac.resume();
+    bus.gain.setTargetAtTime(soundOn ? 1 : 0, ac.currentTime, soundOn ? 0.8 : 0.2);
+  }
+  // 매 프레임: 화면 밖이거나 탭이 가려지면 줄이고, 위치 · 탈것에 맞춰 물소리와 엔진음을 고른다
+  let soundSync = 0;
+  function updateSound(dt, pos) {
+    if (!soundOn || !ac) return;
+    soundSync -= dt;
+    if (soundSync > 0) return;
+    soundSync = 0.15;
+    const t = ac.currentTime;
+    const audible = !document.hidden && stageInView() && !document.getElementById('play').hidden;
+    bus.gain.setTargetAtTime(audible ? 1 : 0, t, 0.6);
+    const near = Math.max(0, 1 - Math.abs(pos.x - RIVER_X) / RIVER_REACH);
+    waterGain.gain.setTargetAtTime(0.05 + near * 0.16, t, 0.5);
+    const riding = S.mode === 'trike';
+    engineGain.gain.setTargetAtTime(riding ? (S.walking ? 0.09 : 0.035) : 0, t, 0.3);
+    engineOsc.frequency.setTargetAtTime(riding && S.walking ? 72 : 46, t, 0.4);
+  }
+  // 발소리: 짧은 잡음 덩어리를 땅 종류에 맞는 필터로 거른다
+  function sfxStep(kind) {
+    if (!soundOn || !ac) return;
+    const t = ac.currentTime;
+    if (kind === 'ladder') { tone([1900 + Math.random() * 200], 0, 0.012, 0.12, 'triangle'); return; }
+    const wet = kind === 'wade' || kind === 'shallow';
+    const src = ac.createBufferSource(); src.buffer = noiseBuf;
+    const f = ac.createBiquadFilter(); f.type = wet ? 'bandpass' : 'lowpass';
+    f.frequency.value = wet ? 900 + Math.random() * 300 : 380 + Math.random() * 160;
+    const g = ac.createGain();
+    const peak = wet ? 0.1 : kind === 'rubble' || kind === 'haul' ? 0.11 : 0.08, len = wet ? 0.28 : 0.09;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(peak, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(f).connect(g).connect(bus);
+    src.start(t, Math.random() * 0.5); src.stop(t + len + 0.02);
   }
   function tone(freqs, gap, peak, decay, type) {
     if (!soundOn || !ac) return;
@@ -1045,7 +1113,7 @@
       g.gain.setValueAtTime(0, t0);
       g.gain.linearRampToValueAtTime(peak, t0 + 0.015);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + decay);
-      o.connect(g).connect(ac.destination);
+      o.connect(g).connect(bus);
       o.start(t0); o.stop(t0 + decay + 0.05);
     });
   }
@@ -1123,7 +1191,9 @@
     const speed = speedFor(p.kind);
     S.t = Math.min(leg.len, S.t + speed * dt);
     if (S.timing) S.moveTime += dt;
+    const prevStep = Math.floor(S.phase / Math.PI);
     S.phase += speed * dt * 0.09;
+    if (S.mode !== 'trike' && Math.floor(S.phase / Math.PI) !== prevStep) sfxStep(p.kind);
     while (S.gateIdx < leg.gates.length && S.t >= leg.gates[S.gateIdx].at) {
       const g = leg.gates[S.gateIdx++];
       if (g.block) { S.t = g.at; block(); g.fn(); break; }
@@ -1146,6 +1216,7 @@
     if (S.leg) pos = pointAt(S.leg, S.t);
     else pos = S.lastPos || { x: P.BASE[0], y: P.BASE[1], kind: 'walk', dx: 1 };
     S.lastPos = pos;
+    updateSound(dt, pos);
     if (Math.abs(pos.dx) > 2) S.facing = pos.dx > 0 ? 1 : -1;
 
     const riding = S.mode === 'trike';
@@ -1287,10 +1358,18 @@
     }
   }
 
+  function enter(sec) {
+    if (reduced) return;
+    sec.classList.remove('entering');
+    void sec.offsetWidth;   // 같은 섹션을 다시 열 때도 애니메이션이 처음부터 돌게
+    sec.classList.add('entering');
+    setTimeout(() => sec.classList.remove('entering'), 1700);   // reset() 이 later 타이머를 지우므로 따로 건다
+  }
   function openSection(id) {
     const sec = document.getElementById(id);
     const was = sec.hidden;
     sec.hidden = false;
+    if (was) enter(sec);
     if (id === 'play') {
       measure();
       if (was) reset(new Event('open')); else sec.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
@@ -1308,6 +1387,37 @@
     if (h === 'play' || h === 'essay' || h === 'question') openSection(h === 'question' ? 'essay' : h);
   }
 
+  // ---------- 스크롤 연출 ----------
+  // 글의 문단 · 사진은 화면에 들어올 때 한 번 떠오른다. 질문 부분은 한 줄씩 차례로.
+  // 키아트는 스크롤보다 느리게 움직이고, 글을 읽는 동안 맨 위에 읽은 만큼 선이 그어진다.
+  function bindScrollFx() {
+    const root = document.documentElement;
+    const art = $('.hero-art'), bar = $('#progress'), essay = $('#essay');
+    if ('IntersectionObserver' in window && !reduced) {
+      const io = new IntersectionObserver((ents) => ents.forEach((en) => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('in');
+        io.unobserve(en.target);
+      }), { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+      const sel = '.block > h2, .block > p, .memory, .shot, .question .eyebrow, .q-quote, .question h2, .question .wrap > p';
+      essay.querySelectorAll(sel).forEach((n) => { n.classList.add('rv'); io.observe(n); });
+      essay.querySelectorAll('.question .wrap > *').forEach((n, i) => { n.style.transitionDelay = (i * 0.18).toFixed(2) + 's'; });
+    }
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = scrollY;
+      if (!reduced && y < art.offsetHeight) root.style.setProperty('--sy', (y * 0.3).toFixed(1) + 'px');
+      if (essay.hidden) { bar.classList.remove('on'); return; }
+      const r = essay.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - innerHeight)));
+      bar.style.setProperty('--p', p.toFixed(4));
+      bar.classList.toggle('on', r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5);
+    };
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
   function init() {
     drawWorld();
     bindInput();
@@ -1315,6 +1425,7 @@
     window.addEventListener('resize', measure);
     if ('ResizeObserver' in window) new ResizeObserver(measure).observe(stage);
     reset();
+    bindScrollFx();
     bindOpeners();
     requestAnimationFrame(frame);
   }
