@@ -275,6 +275,8 @@ h1, h2, h3 { font-weight: 500; }
 .q-quote { margin-block: 8px 40px; }
 .question .q-bridge { color: var(--ink); font-size: 17px; margin-bottom: 8px; }
 .q-quote blockquote p { font-size: clamp(18px, 2.4vw, 21px) !important; }
+.q-quote .orig { font-style: normal; color: var(--ink); line-height: 1.55; }   /* 원문을 위에 크게 */
+.q-quote .tr { font-size: 16px !important; font-weight: 400; color: var(--dim); }   /* 번역은 아래에 작게 */
 
 .question {
   background: radial-gradient(ellipse at 50% 40%, #2a433b, var(--bg) 75%); color: var(--ink);
